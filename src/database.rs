@@ -1,38 +1,55 @@
-use std::error::Error;
-use mongodb::{Client, options::ClientOptions};
-use crate::{config::DatabaseConfig, error};
 use std::convert::TryFrom;
+use std::error::Error;
+
+use mongodb::Client;
+
+use lazy_static::lazy_static;
+
+use crate::{config::DatabaseConfig, error};
+
 #[derive(Debug)]
 pub struct Database {
-    name: String,
-    ip: String,
-    port: u16,
+    pub(crate) name: String,
+    pub(crate) ip: String,
+    pub(crate) port: u16,
 }
 
+lazy_static! {
+    pub static ref DEFAULT_DATABASE: Database = Database::sync_new(None).expect("at least one usable database is needed");
+}
+
+
 impl Database {
-    pub async fn new(config: Option<DatabaseConfig>) -> Result<Database, Box<dyn Error>> {
-        let config = match config {
-            None => DatabaseConfig::new(None).await?,
-            Some(config) => config,
-        };
+    pub async fn new(config: Option<&DatabaseConfig>) -> Result<Database, Box<dyn Error>> {
+        use crate::config::DEFAULT_DATABASE_CONFIG;
+        let config = config.unwrap_or(&*DEFAULT_DATABASE_CONFIG);
         Ok(Database {
-            name: config.name.ok_or("name is missing")?,
-            ip: config.ip.ok_or("ip is missing")?,
-            port: config.port.ok_or("port is missing")?
+            name: config.name.as_ref().ok_or("name is missing")?.clone(),
+            ip: config.ip.as_ref().ok_or("ip is missing")?.clone(),
+            port: config.port.as_ref().ok_or("port is missing")?.clone(),
+        })
+    }
+
+    pub fn sync_new(config: Option<&DatabaseConfig>) -> Result<Database, Box<dyn Error>> {
+        use crate::config::DEFAULT_DATABASE_CONFIG;
+        let config = config.unwrap_or(&*DEFAULT_DATABASE_CONFIG);
+        Ok(Database {
+            name: config.name.as_ref().ok_or("name is missing")?.clone(),
+            ip: config.ip.as_ref().ok_or("ip is missing")?.clone(),
+            port: config.port.as_ref().ok_or("port is missing")?.clone(),
         })
     }
 
     pub async fn connect(&self) -> Result<Client, Box<dyn Error>> {
-        let client_option = ClientOptions::parse(format!("mongodb://{}:{}",self.ip, self.port).as_str()).await?;
-        error!(Client::with_options(client_option))
+        error!(Client::with_uri_str(format!("mongodb://{}:{}", self.ip, self.port).as_str()).await)
     }
 }
+use futures_await_test::async_test;
 
-#[test]
-fn test_database_connect() {
-    use futures::executor::block_on;
-    let db = Database::new(None).unwrap();
-    let cli = block_on(db.connect()).unwrap();
-    assert!(block_on(cli.list_database_names(None, None)).unwrap().contains(&db.name));
+#[async_test]
+async fn test_database_connect() {
+    let db = Database::new(None).await.unwrap();
+    let cli = db.connect().await.unwrap();
+    assert!(cli.list_database_names(None, None).await.unwrap().contains(&db.name));
     cli.database(&db.name);
 }

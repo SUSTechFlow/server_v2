@@ -14,8 +14,21 @@ pub struct DatabaseConfig {
     pub(crate) port: Option<u16>,
 }
 
+use lazy_static::lazy_static;
+
+lazy_static!{
+    pub static ref DEFAULT_DATABASE_CONFIG: DatabaseConfig = DatabaseConfig::sync_new(None).expect("at least one default database config is needed");
+}
+
 impl DatabaseConfig {
-    pub async fn new(mut filepath: Option<&str>) -> Result<DatabaseConfig, Box<dyn Error>> {
+    pub fn sync_new(filepath: Option<&str>) -> Result<DatabaseConfig, Box<dyn Error>> {
+        let filepath = filepath.unwrap_or("config/Database.toml");
+        let mut config_str = String::new();
+        File::open(filepath)?
+            .read_to_string(&mut config_str)?;
+        error!(toml::from_str(&config_str))
+    }
+    pub async fn new(filepath: Option<&str>) -> Result<DatabaseConfig, Box<dyn Error>> {
         let filepath = filepath.unwrap_or("config/Database.toml");
         let mut config_str = String::new();
         File::open(filepath)?
@@ -24,10 +37,10 @@ impl DatabaseConfig {
     }
 }
 
-
-#[test]
-fn test_load_database_config() {
-    let config = DatabaseConfig::new(Some("config/DatabaseTest.toml"));
+use futures_await_test::async_test;
+#[async_test]
+async fn test_load_database_config() {
+    let config = DatabaseConfig::new(Some("config/DatabaseTest.toml")).await;
     if let Ok(DatabaseConfig { name: Some(name), ip: Some(ip), port: Some(port) }) = config {
         assert_eq!(name, "Test");
         assert_eq!(ip, "127.0.0.1");
@@ -37,9 +50,9 @@ fn test_load_database_config() {
     }
 }
 
-#[test]
-fn test_load_default_database_config() {
-    let config = DatabaseConfig::new(None);
+#[async_test]
+async fn test_load_default_database_config() {
+    let config = DatabaseConfig::new(None).await;
     if let Ok(DatabaseConfig { name: Some(name), ip: Some(ip), port: Some(port) }) = config {
         assert_eq!(name, "SUSTechFlow");
         assert_eq!(ip, "127.0.0.1");

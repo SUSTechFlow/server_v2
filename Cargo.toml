@@ -18,6 +18,9 @@ bytes = "0.5.2"
 futures = "0.3.1"
 env_logger = "0.7"
 failure = "0.1.8"
+lazy_static = "1.4.0"
+futures-await-test = "0.3.0"
+num_cpus = "1.13.0"
 [dependencies.mongodb]
 version = "0.11.0"
 default-features = false

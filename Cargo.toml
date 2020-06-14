@@ -1,0 +1,24 @@
+[package]
+name = "web_v2"
+version = "0.1.0"
+authors = ["john <799433746@qq.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "2.0"
+actix-rt = "1.0"
+toml = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+json = "0.12"
+actix-service = "1.0.0"
+bytes = "0.5.2"
+futures = "0.3.1"
+env_logger = "0.7"
+failure = "0.1.8"
+[dependencies.mongodb]
+version = "0.11.0"
+default-features = false
+features = ["async-std-runtime"]

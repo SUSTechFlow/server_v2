@@ -15,14 +15,11 @@ pub struct DatabaseConfig {
 }
 
 impl DatabaseConfig {
-    pub async fn new(filepath: Option<&str>) -> Result<DatabaseConfig, Box<dyn Error>> {
-        let filepath = match filepath {
-            None => "config/Database.toml",
-            Some(f) => f
-        };
+    pub async fn new(mut filepath: Option<&str>) -> Result<DatabaseConfig, Box<dyn Error>> {
+        let filepath = filepath.unwrap_or("config/Database.toml");
         let mut config_str = String::new();
-        let file = File::open(filepath);
-        file?.read_to_string(&mut config_str)?;
+        File::open(filepath)?
+            .read_to_string(&mut config_str)?;
         error!(toml::from_str(&config_str))
     }
 }

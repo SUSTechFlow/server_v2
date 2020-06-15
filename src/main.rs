@@ -1,6 +1,17 @@
-use futures::executor::block_on;
-use web_v2::course::get_course;
+use actix_web::web;
+use mongodb::bson::Bson;
+use server_v2::resources::*;
 
-fn main() {
-    block_on(get_course(None,None));
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    use actix_web::{App, HttpServer};
+
+    HttpServer::new(|| {
+        App::new()
+            .configure(course::config)
+            .configure(rate::config)
+    })
+        .bind("127.0.0.1:8088")?
+        .run()
+        .await
 }

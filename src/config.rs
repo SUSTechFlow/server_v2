@@ -1,11 +1,16 @@
 extern crate toml;
 
+use std::convert::TryFrom;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;
-use crate::error;
-use std::convert::TryFrom;
+
+use futures_await_test::async_test;
 use serde::{Deserialize, Serialize};
+
+use lazy_static::lazy_static;
+
+use crate::error;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DatabaseConfig {
@@ -14,9 +19,7 @@ pub struct DatabaseConfig {
     pub(crate) port: Option<u16>,
 }
 
-use lazy_static::lazy_static;
-
-lazy_static!{
+lazy_static! {
     pub static ref DEFAULT_DATABASE_CONFIG: DatabaseConfig = DatabaseConfig::sync_new(None).expect("at least one default database config is needed");
 }
 
@@ -37,7 +40,6 @@ impl DatabaseConfig {
     }
 }
 
-use futures_await_test::async_test;
 #[async_test]
 async fn test_load_database_config() {
     let config = DatabaseConfig::new(Some("config/DatabaseTest.toml")).await;

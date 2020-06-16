@@ -1,4 +1,4 @@
-use actix_web::{Error, HttpResponse, web};
+use actix_web::{HttpResponse, web};
 use actix_web::body::Body;
 use futures::future;
 use futures::stream::StreamExt;
@@ -40,7 +40,7 @@ async fn get_rate(db: Option<&Database>, filter: Option<Document>) -> Result<Vec
         .await)
 }
 
-async fn get_rate_handler(req: web::Query<Bson>) -> Result<HttpResponse<Body>, Error> {
+async fn get_rate_handler(req: web::Query<Bson>) -> Result<HttpResponse<Body>, actix_web::Error> {
     let injson = match get_rate(None, req.as_document().cloned()).await {
         Ok(v) => serde_json::to_string(&v),
         Err(e) => serde_json::to_string(&e.to_string()),

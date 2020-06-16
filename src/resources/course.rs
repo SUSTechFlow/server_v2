@@ -1,6 +1,5 @@
 use actix_web::{HttpResponse, web};
 use actix_web::body::Body;
-use actix_web::Error;
 use futures::future;
 use futures::stream::StreamExt;
 use futures_await_test::async_test;
@@ -54,7 +53,7 @@ async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<V
     )
 }
 
-async fn get_course_handler(req: web::Query<Bson>) -> Result<HttpResponse<Body>, Error> {
+async fn get_course_handler(req: web::Query<Bson>) -> Result<HttpResponse<Body>, actix_web::Error> {
     let injson = match get_course(None, req.as_document().cloned()).await {
         Ok(v) => serde_json::to_string(&v),
         Err(e) => serde_json::to_string(&e.to_string()),

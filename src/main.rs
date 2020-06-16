@@ -1,5 +1,6 @@
 use actix_web::web;
 use mongodb::bson::Bson;
+
 use server_v2::resources::*;
 
 #[actix_rt::main]

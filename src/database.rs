@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use std::error::Error;
 
+use futures_await_test::async_test;
 use mongodb::Client;
 
 use lazy_static::lazy_static;
@@ -44,7 +45,6 @@ impl Database {
         error!(Client::with_uri_str(format!("mongodb://{}:{}", self.ip, self.port).as_str()).await)
     }
 }
-use futures_await_test::async_test;
 
 #[async_test]
 async fn test_database_connect() {

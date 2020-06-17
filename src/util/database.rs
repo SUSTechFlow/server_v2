@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::error::Error;
 
 use futures_await_test::async_test;
@@ -6,7 +5,7 @@ use mongodb::Client;
 
 use lazy_static::lazy_static;
 
-use crate::{config::DatabaseConfig, error};
+use crate::{error,util::{config::DatabaseConfig}};
 
 #[derive(Debug)]
 pub struct Database {
@@ -22,7 +21,7 @@ lazy_static! {
 
 impl Database {
     pub async fn new(config: Option<&DatabaseConfig>) -> Result<Database, Box<dyn Error>> {
-        use crate::config::DEFAULT_DATABASE_CONFIG;
+        use crate::util::config::DEFAULT_DATABASE_CONFIG;
         let config = config.unwrap_or(&*DEFAULT_DATABASE_CONFIG);
         Ok(Database {
             name: config.name.as_ref().ok_or("name is missing")?.clone(),
@@ -32,7 +31,7 @@ impl Database {
     }
 
     pub fn sync_new(config: Option<&DatabaseConfig>) -> Result<Database, Box<dyn Error>> {
-        use crate::config::DEFAULT_DATABASE_CONFIG;
+        use crate::util::config::DEFAULT_DATABASE_CONFIG;
         let config = config.unwrap_or(&*DEFAULT_DATABASE_CONFIG);
         Ok(Database {
             name: config.name.as_ref().ok_or("name is missing")?.clone(),

@@ -7,6 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+hex = "0.2.0"
+base64 = "0.12.2"
 actix-web = "2.0"
 actix-rt = "1.0"
 toml = "0.5"
@@ -21,6 +23,7 @@ failure = "0.1.8"
 lazy_static = "1.4.0"
 futures-await-test = "0.3.0"
 num_cpus = "1.13.0"
+bcrypt = "0.8"
 [dependencies.mongodb]
 version = "0.11.0"
 default-features = false

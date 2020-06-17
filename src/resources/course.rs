@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, web};
+use actix_web::{HttpResponse, Responder, web};
 use actix_web::body::Body;
 use futures::future;
 use futures::stream::StreamExt;
@@ -6,7 +6,7 @@ use futures_await_test::async_test;
 use mongodb::bson::{Bson, doc, Document, from_bson};
 use serde::{Deserialize, Serialize};
 
-use crate::database::Database;
+use crate::util::database::Database;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Course {
@@ -17,7 +17,7 @@ pub struct Course {
 }
 
 async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Course>, Box<dyn std::error::Error>> {
-    use crate::database::DEFAULT_DATABASE;
+    use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let filter = doc! {"$match": filter.unwrap_or(doc!{})};
     let aggregator = doc! {
@@ -53,14 +53,9 @@ async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<V
     )
 }
 
-async fn get_course_handler(req: web::Query<Bson>) -> Result<HttpResponse<Body>, actix_web::Error> {
-    let injson = match get_course(None, req.as_document().cloned()).await {
-        Ok(v) => serde_json::to_string(&v),
-        Err(e) => serde_json::to_string(&e.to_string()),
-    };
-    Ok(HttpResponse::Ok()
-        .content_type("application/json")
-        .body(injson.unwrap()))
+async fn get_course_handler(req: web::Query<Bson>) -> impl Responder {
+    use crate::handler;
+    handler!(get_course(None, req.as_document().cloned()).await)
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {

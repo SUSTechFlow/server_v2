@@ -1,6 +1,5 @@
 extern crate toml;
 
-use std::convert::TryFrom;
 use std::error::Error;
 use std::fs::File;
 use std::io::Read;

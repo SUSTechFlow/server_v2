@@ -41,8 +41,8 @@ async fn get_rate(db: Option<&Database>, filter: Option<Document>) -> Result<Vec
 }
 
 async fn get_rate_handler(req: web::Query<Bson>) -> impl Responder {
-    use crate::handler;
-    handler!(get_rate(None, req.as_document().cloned()).await)
+    use crate::json_response;
+    web::Json(json_response!(get_rate(None, req.as_document().cloned()).await))
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {

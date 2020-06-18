@@ -9,7 +9,7 @@ pub struct User {
     pub permanent_token: String,
 }
 
-pub async fn get_user(db: Option<&Database>, username_or_email: &str) -> Result<User, Box<dyn std::error::Error>> {
+pub(crate) async fn get_user(db: Option<&Database>, username_or_email: &str) -> Result<User, Box<dyn std::error::Error>> {
     use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let user_doc = db

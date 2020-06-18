@@ -54,8 +54,8 @@ async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<V
 }
 
 async fn get_course_handler(req: web::Query<Bson>) -> impl Responder {
-    use crate::handler;
-    handler!(get_course(None, req.as_document().cloned()).await)
+    use crate::json_response;
+    web::Json(json_response!(get_course(None, req.as_document().cloned()).await))
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {

@@ -2,8 +2,9 @@ use std::error::Error;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum JsonResponse<T, E> {
-    data(T),
-    error(E),
+pub struct JsonResponse<T>{
+    pub(crate) data: Option<T>,
+    pub(crate) error: Option<String>,
+    pub(crate) meta: Option<String>,
 }
 

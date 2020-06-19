@@ -1,12 +1,13 @@
 use mongodb::bson::{Bson, doc, from_bson};
 use serde::{Deserialize, Serialize};
-use crate::{error,util::database::Database};
+
+use crate::{error, util::database::Database};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct User {
-    username: String,
-    email: String,
-    pub permanent_token: String,
+    pub(crate) username: String,
+    pub(crate) email: String,
+    pub(crate) permanent_token: String,
 }
 
 pub(crate) async fn get_user(db: Option<&Database>, username_or_email: &str) -> Result<User, Box<dyn std::error::Error>> {
@@ -23,7 +24,7 @@ pub(crate) async fn get_user(db: Option<&Database>, username_or_email: &str) -> 
                     {"username": &username_or_email},
                     {"email": &username_or_email},
                 ]
-            }, None
+            }, None,
         )
         .await?;
     let user_doc = Bson::Document(user_doc.ok_or("user not found")?);

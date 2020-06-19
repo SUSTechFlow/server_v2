@@ -1,5 +1,4 @@
-use actix_web::{HttpResponse, web, Responder};
-use actix_web::body::Body;
+use actix_web::{Responder, web};
 use futures::future;
 use futures::stream::StreamExt;
 use mongodb::bson::{Bson, doc, Document, from_bson};

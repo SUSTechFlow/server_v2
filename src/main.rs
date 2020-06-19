@@ -1,8 +1,3 @@
-use actix_web::web;
-use futures::executor::block_on;
-use hex::ToHex;
-use mongodb::bson::Bson;
-
 use server_v2::resources::*;
 
 #[actix_rt::main]
@@ -12,6 +7,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .configure(course::config)
             .configure(rate::config)
+            .configure(session::config)
+            .configure(comment::config)
     })
         .bind("127.0.0.1:8088")?
         .run()

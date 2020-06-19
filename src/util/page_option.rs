@@ -1,4 +1,5 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PageOption {
     skip: i64,

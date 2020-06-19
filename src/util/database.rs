@@ -5,7 +5,7 @@ use mongodb::Client;
 
 use lazy_static::lazy_static;
 
-use crate::{error,util::{config::DatabaseConfig}};
+use crate::{error, util::{config::DatabaseConfig}};
 
 #[derive(Debug)]
 pub struct Database {

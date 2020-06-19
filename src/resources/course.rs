@@ -1,5 +1,4 @@
-use actix_web::{HttpResponse, Responder, web};
-use actix_web::body::Body;
+use actix_web::{Responder, web};
 use futures::future;
 use futures::stream::StreamExt;
 use futures_await_test::async_test;

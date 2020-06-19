@@ -13,10 +13,11 @@ use crate::json_response;
 
 use super::user::{get_user, User};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
+use std::error::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
-    username: String,
+    pub(crate) username: String,
     email: String,
     token: String,
 }
@@ -42,6 +43,8 @@ impl fmt::Display for AuthError {
     }
 }
 
+impl Error for AuthError {}
+
 lazy_static! {
     pub static ref SESSION_POOL: Mutex < HashMap < String, Session > > = Mutex::new(HashMap::new());
 }
@@ -51,11 +54,11 @@ fn verify_helper(user: &User, auth_info: &AuthInfo) -> BcryptResult<bool> {
     bcrypt::verify(&auth_info.password, &hash)
 }
 
-async fn post_session_handler(req: web::Json<AuthInfo>) -> impl Responder {
+async fn post_session_handler(auth: web::Json<AuthInfo>) -> impl Responder {
     let mut session_pool = json_response!(SESSION_POOL.lock()).data.unwrap();
-    let user = json_response!(get_user(None, &req.username).await);
+    let user = json_response!(get_user(None, &auth.username).await);
     let user = user.data.unwrap();
-    if json_response!(verify_helper(&user, &req)).data.unwrap() {
+    if json_response!(verify_helper(&user, &auth)).data.unwrap() {
         let uuid = Uuid::new_v4().to_string();
         let session = Session{
             email: user.email.clone(),
@@ -69,11 +72,19 @@ async fn post_session_handler(req: web::Json<AuthInfo>) -> impl Responder {
     }
 }
 
-async fn get_session_handler(req: BearerAuth) -> impl Responder {
+async fn get_session_handler(auth: BearerAuth) -> impl Responder {
     let session_pool = json_response!(SESSION_POOL.lock()).data.unwrap();
-    match session_pool.get(req.token()) {
+    match session_pool.get(auth.token()) {
         Some(session) => web::Json(json_response!(Ok::<Session, AuthError>(session.clone()))),
         None => web::Json(json_response!(Err::<Session, AuthError>(AuthError::NotLogin))),
+    }
+}
+
+pub(crate) async fn get_session(auth: BearerAuth) -> Result<Session, Box<dyn Error>> {
+    let session_pool = SESSION_POOL.lock()?;
+    match session_pool.get(auth.token()) {
+        Some(session) => Ok::<Session, Box<dyn Error>>(session.clone()),
+        None => Err::<Session, Box<dyn Error>>(Box::new(AuthError::NotLogin)),
     }
 }
 

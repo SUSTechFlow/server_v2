@@ -20,8 +20,7 @@ async fn get_rate(db: Option<&Database>, filter: Option<Document>) -> Result<Vec
     use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     Ok(db
-        .connect()
-        .await?
+        .cli
         .database(&db.name)
         .collection("Rate")
         .find(filter, None)

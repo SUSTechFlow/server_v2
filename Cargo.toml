@@ -26,6 +26,10 @@ lazy_static = "1.4.0"
 futures-await-test = "0.3.0"
 num_cpus = "1.13.0"
 bcrypt = "0.8"
+chrono = "0.4"
+rand = "0.7.3"
+lettre = { version = "0.10.0-alpha.1", default-features = false, features = ["smtp-transport", "builder", "rustls-tls"] }
+async-std = "1.5.0"
 [dependencies.mongodb]
 version = "0.11.0"
 default-features = false

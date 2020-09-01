@@ -29,8 +29,7 @@ async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<V
                 }
             };
     Ok(db
-        .connect()
-        .await?
+        .cli
         .database(&db.name)
         .collection("Course")
         .aggregate(

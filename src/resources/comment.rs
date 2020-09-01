@@ -1,14 +1,14 @@
-use serde::{Deserialize, Serialize};
-use futures::stream::StreamExt;
-use futures::future;
 use std::error::Error;
-use mongodb::results::InsertOneResult;
-use mongodb::bson::{Bson, doc, Document, from_bson, to_bson};
-use crate::util::database::Database;
-use actix_web::{web, Responder};
+
+use actix_web::{Responder, web};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
-use crate::resources::user::get_user;
+use futures::future;
+use futures::stream::StreamExt;
+use mongodb::bson::{Bson, doc, Document, from_bson, to_bson};
+use serde::{Deserialize, Serialize};
+
 use crate::resources::session::get_session;
+use crate::util::database::Database;
 
 #[derive(Debug, Deserialize, Serialize)]
 enum Gpa {
@@ -80,8 +80,7 @@ async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let filter = filter.unwrap_or(doc!{});
     Ok(db
-        .connect()
-        .await?
+        .cli
         .database(&db.name)
         .collection("Comment")
         .find(filter, None)
@@ -117,15 +116,20 @@ async fn get_comment_handler(req: web::Query<Bson>) -> impl Responder {
 async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, Box<dyn Error>> {
     use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
+    let cid = &comment.cid;
+    let comment_by = &comment.comment_by.as_ref().unwrap();
     let comment = to_bson(comment)?.as_document().ok_or("failed to transfer Bson to Document")?.clone();
     Ok(db
-        .connect()
-        .await?
+        .cli
         .database(&db.name)
         .collection("Comment")
-        .insert_one(comment,None)
+        .replace_one(doc! {
+            "cid": cid,
+            "comment_by": comment_by
+        }, comment, None)
         .await?
-        .inserted_id
+        .upserted_id
+        .ok_or("comment upsert failed")?
     )
 }
 

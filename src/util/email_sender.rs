@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_std::task::block_on;
-use futures_await_test::async_test;
 use lazy_static::lazy_static;
 use lettre::{Message, SmtpTransport, Tls, Transport};
 use lettre::transport::smtp::authentication::Credentials;
@@ -64,8 +63,9 @@ impl EmailSender {
 
 #[cfg(test)]
 mod test {
-    use crate::util::email_sender::EmailSender;
     use futures_await_test::async_test;
+
+    use crate::util::email_sender::EmailSender;
 
     #[async_test]
     async fn test_email_send() {

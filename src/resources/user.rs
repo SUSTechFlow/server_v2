@@ -1,12 +1,9 @@
 use bcrypt::hash;
-use futures_await_test::async_test;
 use mongodb::bson::{Bson, doc, from_bson};
-use rand::Rng;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::{error, util::database::Database};
-use crate::resources::register_link::{get_register_link, validate_code, validate_email};
+use crate::resources::register_link::{validate_code, validate_email};
 use crate::resources::session::{AuthInfo, post_session, Session};
 use crate::util::crypto::BCRYPT_COST;
 use crate::util::database::DEFAULT_DATABASE;
@@ -58,12 +55,13 @@ pub async fn post_user(db: Option<&Database>, username: &str, email: &str, passw
 #[cfg(test)]
 mod test {
     use futures_await_test::async_test;
-    use uuid::Uuid;
+    use mongodb::bson::doc;
     use rand::Rng;
+    use uuid::Uuid;
+
     use crate::resources::register_link::get_register_link;
     use crate::resources::user::post_user;
     use crate::util::database::DEFAULT_DATABASE;
-    use mongodb::bson::doc;
 
     #[async_test]
     async fn test_post_user() {

@@ -18,7 +18,7 @@ pub struct Course {
 async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Course>, Box<dyn std::error::Error>> {
     use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
-    let filter = doc! {"$match": filter.unwrap_or(doc!{})};
+    let filter = doc! { "$match": filter.unwrap_or(doc!{}) };
     let aggregator = doc! {
                 "$group" : {
                     "_id" : "$cid",

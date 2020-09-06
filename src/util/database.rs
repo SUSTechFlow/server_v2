@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use async_std::task::block_on;
-use futures_await_test::async_test;
 use lazy_static::lazy_static;
 use mongodb::Client;
 
@@ -44,8 +43,9 @@ impl Database {
 }
 #[cfg(test)]
 mod test {
-    use crate::util::database::Database;
     use futures_await_test::async_test;
+
+    use crate::util::database::Database;
 
     #[async_test]
     async fn test_database_connect() {

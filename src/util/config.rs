@@ -4,7 +4,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Read;
 
-use futures_await_test::async_test;
 use lazy_static::lazy_static;
 use serde::{de, Deserialize, Serialize};
 
@@ -51,8 +50,9 @@ pub async fn new<T>(filepath: &str) -> Result<T, Box<dyn Error>>
 }
 #[cfg(test)]
 mod test {
-    use crate::util::config::{EmailSenderConfig, new, DatabaseConfig};
     use futures_await_test::async_test;
+
+    use crate::util::config::{DatabaseConfig, EmailSenderConfig, new};
 
     #[async_test]
     async fn test_load_email_sender_config() {

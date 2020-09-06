@@ -7,8 +7,11 @@ use futures::stream::StreamExt;
 use mongodb::bson::{Bson, doc, Document, from_bson, to_bson};
 use serde::{Deserialize, Serialize};
 
+use crate::json_response;
 use crate::resources::session::get_session;
 use crate::util::database::Database;
+use crate::util::database::DEFAULT_DATABASE;
+use crate::util::ops::PatchOperator;
 
 #[derive(Debug, Deserialize, Serialize)]
 enum Gpa {
@@ -76,9 +79,8 @@ struct Comment {
 }
 
 async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Comment>, Box<dyn Error>> {
-    use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
-    let filter = filter.unwrap_or(doc!{});
+    let filter = filter.unwrap_or(doc! {});
     Ok(db
         .cli
         .database(&db.name)
@@ -97,7 +99,8 @@ async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<
         .map(|x| {
             let mut x = x;
             if !x.willing {
-                x.gpa = None }
+                x.gpa = None
+            }
             if x.anonymous {
                 x.comment_by = None
             }
@@ -108,13 +111,7 @@ async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<
     )
 }
 
-async fn get_comment_handler(req: web::Query<Bson>) -> impl Responder {
-    use crate::json_response;
-    web::Json(json_response!(get_comment(None, req.as_document().cloned()).await))
-}
-
 async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, Box<dyn Error>> {
-    use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let cid = &comment.cid;
     let comment_by = &comment.comment_by.as_ref().unwrap();
@@ -133,11 +130,35 @@ async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, 
     )
 }
 
+async fn patch_comment(db: Option<&Database>, filter: Document, op: PatchOperator) -> Result<Bson, Box<dyn Error>> {
+    let db = db.unwrap_or(&*DEFAULT_DATABASE);
+
+    Ok(db
+        .cli
+        .database(&db.name)
+        .collection("Comment")
+        .update_one(filter, op.as_op(), None)
+        .await?
+        .upserted_id
+        .ok_or("comment patch failed")?
+    )
+}
+
+async fn get_comment_handler(req: web::Query<Bson>) -> impl Responder {
+    web::Json(json_response!(get_comment(None, req.as_document().cloned()).await))
+}
+
 async fn post_comment_handler(auth: BearerAuth, mut comment: web::Json<Comment>) -> impl Responder {
-    use crate::json_response;
     let session = json_response!(get_session(auth).await).data.unwrap();
     comment.comment_by = Some(session.username);
     web::Json(json_response!(post_comment(None, &comment.into_inner()).await))
+}
+
+async fn patch_comment_handler(auth: BearerAuth, req: web::Query<Bson>, op: web::Json<PatchOperator>) -> impl Responder {
+    let session = json_response!(get_session(auth).await).data.unwrap();
+    let mut filter = req.as_document().cloned().unwrap_or(doc! {});
+    filter.insert("comment_by", session.username);
+    web::Json(json_response!(patch_comment(None, filter, op.0).await))
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
@@ -145,5 +166,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         web::resource("/comment")
             .route(web::get().to(get_comment_handler))
             .route(web::post().to(post_comment_handler))
+            .route(web::patch().to(patch_comment_handler))
     );
 }

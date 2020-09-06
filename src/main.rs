@@ -9,6 +9,7 @@ async fn main() -> std::io::Result<()> {
             .configure(rate::config)
             .configure(session::config)
             .configure(comment::config)
+            .configure(detail::config)
     })
         .bind("127.0.0.1:8088")?
         .run()

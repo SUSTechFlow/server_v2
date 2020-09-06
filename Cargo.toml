@@ -30,6 +30,8 @@ chrono = "0.4"
 rand = "0.7.3"
 lettre = { version = "0.10.0-alpha.1", default-features = false, features = ["smtp-transport", "builder", "rustls-tls"] }
 async-std = "1.5.0"
+timer="0.2.0"
+rfc822_sanitizer = "0.3.4"
 [dependencies.mongodb]
 version = "0.11.0"
 default-features = false

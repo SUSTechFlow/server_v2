@@ -7,7 +7,6 @@ mod user_comment_test {
     use rand::Rng;
     use uuid::Uuid;
 
-    use server_v2::resources::comment::Comment;
     use server_v2::resources::register_link::get_register_link;
     use server_v2::resources::session::{AuthInfo, post_session, Session};
     use server_v2::resources::session::SESSION_POOL;

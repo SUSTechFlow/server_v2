@@ -12,12 +12,13 @@ pub struct Detail {
     english_name: String,
     open_by: String,
     test_method: String,
-    credit: f32,
+    credit: String,
     detail: String,
 }
 
 async fn get_detail(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Detail>, Box<dyn std::error::Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
+    let filter = filter.unwrap_or(doc! {});
     Ok(db
         .cli
         .database(&db.name)
@@ -40,4 +41,11 @@ async fn get_detail(db: Option<&Database>, filter: Option<Document>) -> Result<V
 async fn get_detail_handler(req: web::Query<Bson>) -> impl Responder {
     use crate::json_response;
     web::Json(json_response!(get_detail(None, req.as_document().cloned()).await))
+}
+
+pub fn config(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::resource("/detail")
+            .route(web::get().to(get_detail_handler))
+    );
 }

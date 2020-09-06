@@ -5,6 +5,7 @@ use mongodb::bson::{Bson, doc, Document, from_bson};
 use serde::{Deserialize, Serialize};
 
 use crate::util::database::Database;
+use crate::util::database::DEFAULT_DATABASE;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Rate {
@@ -17,7 +18,6 @@ pub struct Rate {
 }
 
 async fn get_rate(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Rate>, Box<dyn std::error::Error>> {
-    use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     Ok(db
         .cli

@@ -5,7 +5,9 @@ use futures_await_test::async_test;
 use mongodb::bson::{Bson, doc, Document, from_bson};
 use serde::{Deserialize, Serialize};
 
+use crate::json_response;
 use crate::util::database::Database;
+use crate::util::database::DEFAULT_DATABASE;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Course {
@@ -16,7 +18,6 @@ pub struct Course {
 }
 
 async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Course>, Box<dyn std::error::Error>> {
-    use crate::util::database::DEFAULT_DATABASE;
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let filter = doc! { "$match": filter.unwrap_or(doc!{}) };
     let aggregator = doc! {
@@ -52,7 +53,6 @@ async fn get_course(db: Option<&Database>, filter: Option<Document>) -> Result<V
 }
 
 async fn get_course_handler(req: web::Query<Bson>) -> impl Responder {
-    use crate::json_response;
     web::Json(json_response!(get_course(None, req.as_document().cloned()).await))
 }
 

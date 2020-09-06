@@ -78,6 +78,20 @@ pub struct Comment {
     day: usize,
 }
 
+async fn delete_comment(db: Option<&Database>, filter: Option<Document>, comment_by: &str) -> Result<i64, Box<dyn Error>> {
+    let db = db.unwrap_or(&*DEFAULT_DATABASE);
+    let mut filter = filter.ok_or("delete operation cannot be done in bulk")?;
+    filter.insert("comment_by", comment_by);
+    Ok(db
+        .cli
+        .database(&db.name)
+        .collection("Comment")
+        .delete_one( filter, None)
+        .await?
+        .deleted_count
+    )
+}
+
 pub async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Comment>, Box<dyn Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let filter = filter.unwrap_or(doc! {});
@@ -111,6 +125,10 @@ pub async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Res
     )
 }
 
+async fn delete_comment_handler(auth: BearerAuth, req: web::Json<Bson>) -> impl Responder {
+    let session = json_response!(get_session(auth).await).data.unwrap();
+    web::Json(json_response!(delete_comment(None, req.as_document().cloned(), &session.username).await))
+}
 pub async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, Box<dyn Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let cid = &comment.cid;
@@ -167,5 +185,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route(web::get().to(get_comment_handler))
             .route(web::post().to(post_comment_handler))
             .route(web::patch().to(patch_comment_handler))
+            .route(web::delete().to(delete_comment_handler))
     );
 }

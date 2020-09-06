@@ -63,10 +63,14 @@ pub fn validate_email(email: &str) -> Result<&str, RegisterError> {
 }
 
 pub fn validate_code(email: &str, code: &str) -> Result<(), Box<dyn Error>> {
-    if let Some(entry) = EMAIL_CODE_DICT.lock()?.get(email) {
+    let mut email_dict = EMAIL_CODE_DICT.lock()?;
+    if let Some(entry) = email_dict.get(email) {
         if Utc::now().signed_duration_since(entry.last_time).num_minutes() < EXPIRE_TIME as i64
             && code == entry.entry.code {
             return Ok(());
+        }
+        if Utc::now().signed_duration_since(entry.last_time).num_minutes() >= EXPIRE_TIME as i64 {
+            email_dict.remove(email);
         }
     }
     Err(Box::new(RegisterError::CodeInvalid))

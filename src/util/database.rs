@@ -8,10 +8,10 @@ use crate::{error, util::{config::DatabaseConfig}};
 
 #[derive(Debug)]
 pub struct Database {
-    pub(crate) name: String,
+    pub name: String,
     pub(crate) ip: String,
     pub(crate) port: u16,
-    pub(crate) cli: Client,
+    pub cli: Client,
 }
 
 lazy_static! {

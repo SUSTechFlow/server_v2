@@ -48,7 +48,7 @@ pub struct EmailCodeTimeEntry {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EmailCodeEntry {
     email: String,
-    pub(crate) code: String,
+    pub code: String,
 }
 
 pub fn validate_email(email: &str) -> Result<&str, RegisterError> {

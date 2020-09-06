@@ -15,17 +15,17 @@ use crate::util::crypto::verify_helper;
 
 use super::user::get_user;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Session {
-    pub(crate) username: String,
-    pub(crate) email: String,
-    token: String,
+    pub username: String,
+    pub email: String,
+    pub token: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthInfo {
-    pub(crate) username: String,
-    pub(crate) password: String,
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Debug)]
@@ -51,7 +51,7 @@ lazy_static! {
 
 
 
-pub(crate) async fn get_session(auth: BearerAuth) -> Result<Session, Box<dyn Error>> {
+pub async fn get_session(auth: BearerAuth) -> Result<Session, Box<dyn Error>> {
     let session_pool = SESSION_POOL.lock()?;
     match session_pool.get(auth.token()) {
         Some(session) => Ok::<Session, Box<dyn Error>>(session.clone()),
@@ -59,7 +59,7 @@ pub(crate) async fn get_session(auth: BearerAuth) -> Result<Session, Box<dyn Err
     }
 }
 
-pub(crate) async fn post_session(auth: AuthInfo) -> Result<Session, Box<dyn Error>> {
+pub async fn post_session(auth: AuthInfo) -> Result<Session, Box<dyn Error>> {
     let mut session_pool = SESSION_POOL.lock()?;
     let user = get_user(None, &auth.username).await?;
     if verify_helper(&user.permanent_token, &auth.password) {

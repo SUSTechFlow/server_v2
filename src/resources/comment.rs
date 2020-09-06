@@ -61,7 +61,7 @@ struct Rate {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Comment {
+pub struct Comment {
     gpa: Option<Gpa>,
     cid: String,
     content: String,
@@ -78,7 +78,7 @@ struct Comment {
     day: usize,
 }
 
-async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Comment>, Box<dyn Error>> {
+pub async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<Vec<Comment>, Box<dyn Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let filter = filter.unwrap_or(doc! {});
     Ok(db
@@ -111,7 +111,7 @@ async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Result<
     )
 }
 
-async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, Box<dyn Error>> {
+pub async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, Box<dyn Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let cid = &comment.cid;
     let comment_by = &comment.comment_by.as_ref().unwrap();
@@ -130,7 +130,7 @@ async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, 
     )
 }
 
-async fn patch_comment(db: Option<&Database>, filter: Document, op: PatchOperator) -> Result<Bson, Box<dyn Error>> {
+pub async fn patch_comment(db: Option<&Database>, filter: Document, op: PatchOperator) -> Result<Bson, Box<dyn Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
 
     Ok(db
@@ -144,17 +144,17 @@ async fn patch_comment(db: Option<&Database>, filter: Document, op: PatchOperato
     )
 }
 
-async fn get_comment_handler(req: web::Query<Bson>) -> impl Responder {
+pub async fn get_comment_handler(req: web::Query<Bson>) -> impl Responder {
     web::Json(json_response!(get_comment(None, req.as_document().cloned()).await))
 }
 
-async fn post_comment_handler(auth: BearerAuth, mut comment: web::Json<Comment>) -> impl Responder {
+pub async fn post_comment_handler(auth: BearerAuth, mut comment: web::Json<Comment>) -> impl Responder {
     let session = json_response!(get_session(auth).await).data.unwrap();
     comment.comment_by = Some(session.username);
     web::Json(json_response!(post_comment(None, &comment.into_inner()).await))
 }
 
-async fn patch_comment_handler(auth: BearerAuth, req: web::Query<Bson>, op: web::Json<PatchOperator>) -> impl Responder {
+pub async fn patch_comment_handler(auth: BearerAuth, req: web::Query<Bson>, op: web::Json<PatchOperator>) -> impl Responder {
     let session = json_response!(get_session(auth).await).data.unwrap();
     let mut filter = req.as_document().cloned().unwrap_or(doc! {});
     filter.insert("comment_by", session.username);

@@ -55,15 +55,26 @@ pub async fn post_user(db: Option<&Database>, username: &str, email: &str, passw
     }).await?)
 }
 
-#[async_test]
-async fn test_post_user() {
-    let username = &Uuid::new_v4().to_string();
-    let mut rng = rand::thread_rng();
-    let email = (rng.gen_range(1000_0000, 9999_9999) as u32).to_string();
-    let code = get_register_link(&(email.clone() + "@sustech.edu.cn")).await.unwrap().code;
+#[cfg(test)]
+mod test {
+    use futures_await_test::async_test;
+    use uuid::Uuid;
+    use rand::Rng;
+    use crate::resources::register_link::get_register_link;
+    use crate::resources::user::post_user;
+    use crate::util::database::DEFAULT_DATABASE;
+    use mongodb::bson::doc;
 
-    assert!(post_user(None, username, &(email + "@sustech.edu.cn"), "test", &code).await.is_ok());
-    let db = &DEFAULT_DATABASE;
-    assert!(db.cli.database(&db.name).collection("User")
-        .delete_one(doc! {"username": username}, None).await.is_ok());
+    #[async_test]
+    async fn test_post_user() {
+        let username = &Uuid::new_v4().to_string();
+        let mut rng = rand::thread_rng();
+        let email = (rng.gen_range(1000_0000, 9999_9999) as u32).to_string();
+        let code = get_register_link(&(email.clone() + "@sustech.edu.cn")).await.unwrap().code;
+
+        assert!(post_user(None, username, &(email + "@sustech.edu.cn"), "test", &code).await.is_ok());
+        let db = &DEFAULT_DATABASE;
+        assert!(db.cli.database(&db.name).collection("User")
+            .delete_one(doc! {"username": username}, None).await.is_ok());
+    }
 }

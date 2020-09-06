@@ -62,8 +62,14 @@ impl EmailSender {
     }
 }
 
-#[async_test]
-async fn test_email_send() {
-    let sender = EmailSender::new(None).await.unwrap();
-    sender.send("11712009@mail.sustech.edu.cn", "test", "test").await.unwrap();
+#[cfg(test)]
+mod test {
+    use crate::util::email_sender::EmailSender;
+    use futures_await_test::async_test;
+
+    #[async_test]
+    async fn test_email_send() {
+        let sender = EmailSender::new(None).await.unwrap();
+        sender.send("11712009@mail.sustech.edu.cn", "test", "test").await.unwrap();
+    }
 }

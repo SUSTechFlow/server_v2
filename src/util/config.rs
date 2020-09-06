@@ -49,40 +49,44 @@ pub async fn new<T>(filepath: &str) -> Result<T, Box<dyn Error>>
         .read_to_string(&mut config_str)?;
     error!(toml::from_str(&config_str))
 }
+#[cfg(test)]
+mod test {
+    use crate::util::config::{EmailSenderConfig, new, DatabaseConfig};
+    use futures_await_test::async_test;
 
-#[async_test]
-async fn test_load_email_sender_config() {
-    let config = new::<EmailSenderConfig>("config/EmailSender.toml").await;
-    if let Ok(EmailSenderConfig { smtp_server: Some(smtp_server), smtp_account: Some(smtp_account), smtp_password: Some(_), smtp_port: Some(smtp_port) }) = config {
-        assert_eq!(smtp_server, "smtpdm.aliyun.com");
-        assert_eq!(smtp_account, "regsiterlink@auto.sustechflow.top");
-        assert_eq!(smtp_port, 80);
-    } else {
-        panic!("fields are missing, failed")
+    #[async_test]
+    async fn test_load_email_sender_config() {
+        let config = new::<EmailSenderConfig>("config/EmailSender.toml").await;
+        if let Ok(EmailSenderConfig { smtp_server: Some(smtp_server), smtp_account: Some(smtp_account), smtp_password: Some(_), smtp_port: Some(smtp_port) }) = config {
+            assert_eq!(smtp_server, "smtpdm.aliyun.com");
+            assert_eq!(smtp_account, "regsiterlink@auto.sustechflow.top");
+            assert_eq!(smtp_port, 80);
+        } else {
+            panic!("fields are missing, failed")
+        }
+    }
+
+    #[async_test]
+    async fn test_load_database_config() {
+        let config = new::<DatabaseConfig>("config/DatabaseTest.toml").await;
+        if let Ok(DatabaseConfig { name: Some(name), ip: Some(ip), port: Some(port) }) = config {
+            assert_eq!(name, "Test");
+            assert_eq!(ip, "127.0.0.1");
+            assert_eq!(port, 42);
+        } else {
+            panic!("fields are missing, failed")
+        }
+    }
+
+    #[async_test]
+    async fn test_load_default_database_config() {
+        let config = new::<DatabaseConfig>("config/Database.toml").await;
+        if let Ok(DatabaseConfig { name: Some(name), ip: Some(ip), port: Some(port) }) = config {
+            assert_eq!(name, "SUSTechFlow");
+            assert_eq!(ip, "127.0.0.1");
+            assert_eq!(port, 27017);
+        } else {
+            panic!("fields are missing, failed")
+        }
     }
 }
-
-#[async_test]
-async fn test_load_database_config() {
-    let config = new::<DatabaseConfig>("config/DatabaseTest.toml").await;
-    if let Ok(DatabaseConfig { name: Some(name), ip: Some(ip), port: Some(port) }) = config {
-        assert_eq!(name, "Test");
-        assert_eq!(ip, "127.0.0.1");
-        assert_eq!(port, 42);
-    } else {
-        panic!("fields are missing, failed")
-    }
-}
-
-#[async_test]
-async fn test_load_default_database_config() {
-    let config = new::<DatabaseConfig>("config/Database.toml").await;
-    if let Ok(DatabaseConfig { name: Some(name), ip: Some(ip), port: Some(port) }) = config {
-        assert_eq!(name, "SUSTechFlow");
-        assert_eq!(ip, "127.0.0.1");
-        assert_eq!(port, 27017);
-    } else {
-        panic!("fields are missing, failed")
-    }
-}
-

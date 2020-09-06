@@ -42,13 +42,18 @@ impl Database {
         block_on(Database::new(config))
     }
 }
+#[cfg(test)]
+mod test {
+    use crate::util::database::Database;
+    use futures_await_test::async_test;
 
-#[async_test]
-async fn test_database_connect() {
-    let db = Database::new(None).await.unwrap();
-    for _ in 1..1000 {
-        let cli = &db.cli;
-        assert!(cli.list_database_names(None, None).await.unwrap().contains(&db.name));
-        cli.database(&db.name);
+    #[async_test]
+    async fn test_database_connect() {
+        let db = Database::new(None).await.unwrap();
+        for _ in 1..10 {
+            let cli = &db.cli;
+            assert!(cli.list_database_names(None, None).await.unwrap().contains(&db.name));
+            cli.database(&db.name);
+        }
     }
 }

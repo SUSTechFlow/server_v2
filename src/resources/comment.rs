@@ -145,13 +145,7 @@ pub async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bs
         .replace_one(doc! {
             "cid": cid,
             "comment_by": comment_by
-        }, comment, ReplaceOptions {
-            bypass_document_validation: None,
-            upsert: Some(true),
-            collation: None,
-            hint: None,
-            write_concern: None,
-        })
+        }, comment, ReplaceOptions::builder().upsert(true).build())
         .await?
         .upserted_id
         .ok_or("comment upsert failed")?

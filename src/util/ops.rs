@@ -6,6 +6,7 @@ pub enum PatchOperator {
     AddToSet(String, Bson),
     Set(String, Bson),
     Inc(String, i64),
+    RmFromSet(String, Bson),
 }
 
 impl PatchOperator {
@@ -19,6 +20,9 @@ impl PatchOperator {
             },
             PatchOperator::Inc(field, amount) => doc! {
                 "$inc": { field: amount }
+            },
+            PatchOperator::RmFromSet(field, elem) => doc! {
+                "$pull": { field: elem }
             },
         }
     }

@@ -4,8 +4,8 @@ use actix_web::{Responder, web};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use bcrypt::hash;
 use mongodb::bson::{Bson, doc, from_bson};
-use serde::{Deserialize, Serialize};
 use mongodb::bson::Document;
+use serde::{Deserialize, Serialize};
 
 use crate::{error, util::database::Database};
 use crate::json_response;
@@ -77,7 +77,7 @@ pub async fn patch_user(db: Option<&Database>, filter: Document, op: PatchOperat
     )
 }
 
-pub async fn patch_comment_handler(auth: BearerAuth, op: web::Json<PatchOperator>) -> impl Responder {
+pub async fn patch_user_handler(auth: BearerAuth, op: web::Json<PatchOperator>) -> impl Responder {
     let session = json_response!(get_session(auth).await).data.unwrap();
     let filter = doc! {"username": session.username};
     web::Json(json_response!(patch_user(None, filter, op.0).await))

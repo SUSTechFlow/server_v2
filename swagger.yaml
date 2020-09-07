@@ -168,12 +168,6 @@ paths:
         200:
           description: "待实现"
 
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-
 definitions:
   Comment:
     type: "object"

@@ -10,7 +10,7 @@ mod user_comment_test {
     use server_v2::resources::register_link::get_register_link;
     use server_v2::resources::session::{AuthInfo, post_session, Session};
     use server_v2::resources::session::SESSION_POOL;
-    use server_v2::resources::user::post_user;
+    use server_v2::resources::user::{post_user, RegisterInfo};
     use server_v2::util::database::DEFAULT_DATABASE;
 
     async fn create_user() -> AuthInfo {
@@ -19,7 +19,7 @@ mod user_comment_test {
         let email = (rng.gen_range(1000_0000, 9999_9999) as u32).to_string();
         let code = get_register_link(&(email.clone() + "@sustech.edu.cn")).await.unwrap().code;
 
-        assert!(post_user(None, &username, &(email + "@sustech.edu.cn"), "test", &code).await.is_ok());
+        assert!(post_user(None, RegisterInfo{username:username.clone(), password: "test".to_string(), vcode: code, email}).await.is_ok());
         AuthInfo {
             username,
             password: "test".to_string(),

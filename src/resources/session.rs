@@ -11,11 +11,14 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use timer::Timer;
 use uuid::Uuid;
+use mongodb::bson::{doc, Bson, Document, from_bson};
 
+use crate::error;
 use crate::json_response;
 use crate::util::crypto::verify_helper;
-
-use super::user::get_user;
+use crate::util::database::Database;
+use crate::util::database::DEFAULT_DATABASE;
+use crate::resources::user::User;
 
 const EXPIRE_TIME: u8 = 1;
 const API_LIMIT: u64 = 1000;
@@ -84,10 +87,29 @@ pub async fn get_session(auth: BearerAuth) -> Result<Session, Box<dyn Error>> {
     }
 }
 
+async fn user_info(db: Option<&Database>, username_or_email: &str) -> Result<User, Box<dyn std::error::Error>> {
+    let db = db.unwrap_or(&DEFAULT_DATABASE);
+    let user_doc = db
+        .cli
+        .database(&db.name)
+        .collection("User")
+        .find_one(
+            doc! {"$or" :
+                [
+                    {"username": &username_or_email},
+                    {"email": &username_or_email},
+                ]
+            }, None,
+        )
+        .await?;
+    let user_doc = Bson::Document(user_doc.ok_or("user not found")?);
+    error!(from_bson::<User>(user_doc))
+}
+
 pub async fn post_session(auth: AuthInfo) -> Result<Session, Box<dyn Error>> {
     let mut session_pool = SESSION_POOL.lock()?;
     let mut api_counter = API_COUNTER.lock()?;
-    let user = get_user(None, &auth.username).await?;
+    let user = user_info(None, &auth.username).await?;
     if verify_helper(&user.permanent_token, &auth.password) {
         if !api_counter.contains_key(&user.email) {
             api_counter.insert(user.email.clone(), 0);

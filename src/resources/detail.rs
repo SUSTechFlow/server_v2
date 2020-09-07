@@ -9,9 +9,9 @@ use crate::util::database::DEFAULT_DATABASE;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Detail {
     cid: String,
+    name: String,
     english_name: String,
     open_by: String,
-    test_method: String,
     credit: String,
     detail: String,
 }

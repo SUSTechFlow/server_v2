@@ -9,6 +9,7 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::util::email_sender::DEFAULT_EMAIL_SENDER;
 use crate::json_response;
 
 const EXPIRE_TIME: u8 = 30;
@@ -92,6 +93,7 @@ pub async fn get_register_link(email: &str) -> Result<EmailCodeEntry, Box<dyn Er
         entry: entry.clone(),
         last_time: Utc::now(),
     });
+    DEFAULT_EMAIL_SENDER.send(email, "Flow 注册链接", &format!("https://sustechflow.top/signup?vcode={}", entry.code)).await?;
     Ok(entry)
 }
 

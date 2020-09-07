@@ -1,0 +1,310 @@
+swagger: "2.0"
+info:
+  description: "这是 SUSTechFlow 的后端 API 文档，随版本不同，URL 可能会变动，请注意。"
+  version: "0.0.1"
+  title: "SUSTechFlow"
+
+host: "127.0.0.1:8088"
+basePath: "/"
+tags:
+  - name: "course"
+    description: "基本课程"
+  - name: "detail"
+    description: "详细课程"
+  - name: "user"
+    description: "用户信息"
+  - name: "session"
+    description: "登录态"
+  - name: "comment"
+    description: "评论"
+  - name: "register_link"
+    description: "注册链接"
+  - name: "rate"
+    description: "课程评分"
+
+schemes:
+  - "https"
+  - "http"
+paths:
+  /course:
+    get:
+      tags:
+        - "course"
+      summary: "获取课程信息"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "cid"
+          type: "string"
+          description: "课程编号"
+        - in: "query"
+          name: "name"
+          type: "string"
+          description: "课程名"
+      responses:
+        200:
+          description: "课程信息"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Course"
+  /detail:
+    get:
+      tags:
+        - "detail"
+      summary: "获取课程详细信息"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "cid"
+          type: "string"
+          description: "课程编号"
+        - in: "query"
+          name: "name"
+          type: "string"
+          description: "课程名"
+      responses:
+        200:
+          description: "课程详细信息"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Detail"
+  /rate:
+    get:
+      tags:
+        - "rate"
+      summary: "获取课程评分"
+      parameters:
+        - in: "query"
+          name: "cid"
+          type: "string"
+          description: "课程编号"
+        - in: "query"
+          name: "name"
+          type: "string"
+          description: "课程名"
+      responses:
+        200:
+          description: "课程评分"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Rate"
+  /comment:
+    get:
+      tags:
+        - "comment"
+      summary: "获取评论"
+      parameters:
+        - in: "query"
+          name: "cid"
+          type: "string"
+          description: "课程编号"
+          required: true
+        - in: "query"
+          name: "name"
+          type: "string"
+          description: "课程名"
+        - in: "query"
+          name: "<anything in comment model>"
+          type: "string"
+          description: "理论上可以按照Comment模型进行筛选"
+      responses:
+        200:
+          description: "课程评价"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Comment"
+    post:
+      tags:
+        - "comment"
+      summary: "更改，提交评论"
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          type: "string"
+          schema:
+            type: "string"
+            example: "Bearer: <KEY>"
+          required: true
+        - in: "body"
+          name: "comment"
+          schema:
+            $ref: "#/definitions/Comment"
+          required: true
+
+      responses:
+        200:
+          description: "评论 ID"
+    delete:
+      tags:
+        - "comment"
+      summary: "删除评论"
+      parameters:
+        - in: "header"
+          name: "Authorization"
+          type: "string"
+          schema:
+            type: "string"
+            example: "Bearer: <KEY>"
+          required: true
+        - in: "query"
+          name: "cid"
+          type: "string"
+          description: "课程编号"
+          required: true
+      responses:
+        200:
+          description: "删除数量"
+    patch:
+      tags:
+        - "comment"
+      summary: "评论更改"
+      responses:
+        200:
+          description: "待实现"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+definitions:
+  Comment:
+    type: "object"
+    properties:
+      cid:
+        type: "string"
+        description: "课程编号"
+      gpa:
+        type: "string"
+        description: "绩点，为英文字母"
+      content:
+        type: "string"
+        description: "评论内容"
+      comment_by:
+        type: "string"
+        description: "评论者用户名"
+      term:
+        type: "string"
+        description: "学期，春夏秋冬"
+      rate:
+        $ref: "#/definitions/Rate"
+      taught:
+        description: "教学老师"
+        type: "array"
+        items:
+          type: "string"
+      year:
+        type: "integer"
+      month:
+        type: "integer"
+      day:
+        type: "integer"
+      willing:
+        type: "boolean"
+        description: "是否公开GPA"
+      anonymous:
+        type: "boolean"
+        description: "是否匿名"
+  Rate:
+    type: "object"
+    properties:
+      cid:
+        type: "string"
+        description: "课程编号"
+      name:
+        type: "string"
+        description: "课程名"
+      ratings:
+        type: "number"
+        description: "永远都是 5, 技术债务"
+      likes:
+        type: "number"
+        description: "平均喜爱指数"
+      useful:
+        type: "number"
+        description: "平均有用指数"
+      easy:
+        type: "number"
+        description: "平均简单指数"
+  Detail:
+    type: "object"
+    properties:
+      cid:
+        type: "string"
+        description: "课程编号"
+      name:
+        type: "string"
+        description: "课程名"
+      english_name:
+        type: "string"
+        description: "英文名"
+      open_by:
+        type: "string"
+        description: "开课单位"
+      credit:
+        type: "number"
+        description: "学分"
+  Course:
+    type: "object"
+    properties:
+      cid:
+        type: "string"
+        description: "课程编号"
+      name:
+        type: "string"
+        description: "课程名"
+      taught_by:
+        description: "教学老师，某门可能会有多个教学老师"
+        type: "array"
+        items:
+          type: "array"
+          items:
+            type: "string"
+      faculty:
+        type: "string"
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      username:
+        type: "string"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+      phone:
+        type: "string"
+      userStatus:
+        type: "integer"
+        format: "int32"
+        description: "User Status"
+    xml:
+      name: "User"
+
+
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

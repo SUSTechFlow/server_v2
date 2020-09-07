@@ -5,6 +5,7 @@ use actix_web_httpauth::extractors::bearer::BearerAuth;
 use futures::future;
 use futures::stream::StreamExt;
 use mongodb::bson::{Bson, doc, Document, from_bson, to_bson};
+use mongodb::options::ReplaceOptions;
 use serde::{Deserialize, Serialize};
 
 use crate::json_response;
@@ -118,6 +119,8 @@ pub async fn get_comment(db: Option<&Database>, filter: Option<Document>) -> Res
             if x.anonymous {
                 x.comment_by = None
             }
+            x.helpful = Some(x.helpful.unwrap_or(0));
+            x.not_helpful = Some(x.not_helpful.unwrap_or(0));
             x
         })
         .collect::<Vec<Comment>>()
@@ -129,6 +132,7 @@ async fn delete_comment_handler(auth: BearerAuth, req: web::Json<Bson>) -> impl 
     let session = json_response!(get_session(auth).await).data.unwrap();
     web::Json(json_response!(delete_comment(None, req.as_document().cloned(), &session.username).await))
 }
+
 pub async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bson, Box<dyn Error>> {
     let db = db.unwrap_or(&*DEFAULT_DATABASE);
     let cid = &comment.cid;
@@ -141,7 +145,13 @@ pub async fn post_comment(db: Option<&Database>, comment: &Comment) -> Result<Bs
         .replace_one(doc! {
             "cid": cid,
             "comment_by": comment_by
-        }, comment, None)
+        }, comment, ReplaceOptions {
+            bypass_document_validation: None,
+            upsert: Some(true),
+            collation: None,
+            hint: None,
+            write_concern: None,
+        })
         .await?
         .upserted_id
         .ok_or("comment upsert failed")?

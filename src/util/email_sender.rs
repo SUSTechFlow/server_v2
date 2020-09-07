@@ -16,7 +16,7 @@ pub struct EmailSender {
 }
 
 lazy_static! {
-    static ref DEFAULT_EMAIL_SENDER: EmailSender = EmailSender::sync_new(None)
+    pub static ref DEFAULT_EMAIL_SENDER: EmailSender = EmailSender::sync_new(None)
             .expect("at least one usable email sender is needed");
 }
 

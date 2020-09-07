@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum PatchOperator {
+    AddToSet(String, Bson),
     Set(String, Bson),
     Inc(String, i64),
 }
@@ -10,6 +11,9 @@ pub enum PatchOperator {
 impl PatchOperator {
     pub fn as_op(&self) -> Document {
         match self {
+            PatchOperator::AddToSet(field, elem) => doc! {
+                "$addToSet": {field: elem}
+            },
             PatchOperator::Set(field, new_value) => doc! {
                 "$set": { field: new_value }
             },
